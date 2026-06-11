@@ -1,0 +1,197 @@
+
+<h2 class="sr-only">Interactive OOS prototype with updated notify-me and marketing subscribe flow</h2>
+
+<style>
+  .proto-wrap { font-family: var(--font-sans); max-width: 680px; }
+  .toggle-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+  .toggle-btn { flex: 1; padding: 9px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-secondary); font-size: 13px; cursor: pointer; transition: all .15s; }
+  .toggle-btn.active { background: #1A56DB; color: #fff; border-color: #1A56DB; font-weight: 500; }
+  .product-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+  .product-hero { display: flex; gap: 20px; padding: 20px; background: var(--color-background-primary); }
+  .product-img { width: 140px; height: 110px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
+  .oos-badge { position: absolute; top: 8px; right: 8px; background: #FEF2F2; color: #991B1B; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: var(--border-radius-md); border: 0.5px solid #FCA5A5; }
+  .product-meta { flex: 1; min-width: 0; }
+  .product-title { font-size: 17px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 8px; }
+  .product-sub { display: flex; gap: 16px; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 14px; }
+  .oos-banner { display: flex; align-items: flex-start; gap: 10px; background: #FEF2F2; border: 0.5px solid #FCA5A5; border-radius: var(--border-radius-md); padding: 12px 14px; margin-bottom: 14px; }
+  .oos-banner-text strong { color: #991B1B; display: block; margin-bottom: 2px; font-size: 13px; }
+  .oos-banner-text span { color: #B91C1C; font-size: 12px; }
+  .notify-panel { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 16px; background: var(--color-background-secondary); }
+  .notify-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 12px; }
+  .notify-input { width: 100%; box-sizing: border-box; font-size: 13px; padding: 10px 14px; border: 0.5px solid var(--color-border-secondary); border-radius: 999px; background: var(--color-background-primary); color: var(--color-text-primary); margin-bottom: 10px; }
+  .notify-btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .btn-notify { flex: 1; padding: 10px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--color-text-primary); cursor: pointer; }
+  .btn-notify:hover { background: var(--color-background-secondary); }
+  .divider-or { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .divider-or span { font-size: 11px; color: var(--color-text-tertiary); white-space: nowrap; }
+  .divider-or::before, .divider-or::after { content: ''; flex: 1; border-top: 0.5px solid var(--color-border-tertiary); }
+  .btn-subscribe { width: 100%; padding: 12px; background: #111827; color: #fff; border: none; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; letter-spacing: 0.01em; }
+  .btn-subscribe:hover { background: #1f2937; }
+  .consent-copy { font-size: 11px; color: var(--color-text-secondary); line-height: 1.6; }
+  .consent-copy a { color: var(--color-text-secondary); text-decoration: underline; }
+  .success-msg { display: none; background: #F0FDF4; border: 0.5px solid #86EFAC; border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 13px; color: #166534; margin-top: 10px; }
+  .alts-section { padding: 16px 20px 20px; border-top: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); }
+  .alts-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .alts-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin: 0; }
+  .see-all { font-size: 12px; color: #1A56DB; cursor: pointer; }
+  .alts-sub { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 14px; }
+  .alts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .alt-tile { border: 1.5px solid #166534; border-radius: var(--border-radius-md); padding: 14px 10px 12px; text-align: center; background: var(--color-background-primary); cursor: pointer; }
+  .alt-tile:hover { border-color: #1A56DB; }
+  .alt-logo { width: 44px; height: 44px; border-radius: 10px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .alt-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 3px; }
+  .alt-price { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 10px; }
+  .alt-buy { width: 100%; padding: 7px 0; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 12px; color: var(--color-text-primary); cursor: pointer; font-weight: 500; }
+  .denom-section { padding: 16px 20px; border-top: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); }
+  .denom-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 12px; }
+  .denom-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .denom-tile { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px; }
+  .denom-tile.oos-denom { opacity: 0.5; background: var(--color-background-secondary); }
+  .denom-label { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; }
+  .denom-buy { width: 100%; padding: 8px; font-size: 12px; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 500; }
+  .denom-buy.active { background: #111827; color: #fff; border: none; }
+  .denom-buy.inactive { background: var(--color-background-secondary); color: var(--color-text-tertiary); border: 0.5px solid var(--color-border-tertiary); cursor: default; }
+</style>
+
+<div class="proto-wrap">
+  <div style="margin-bottom: 14px;">
+    <p style="font-size: 12px; color: var(--color-text-secondary); margin: 0 0 8px;">Switch product type to see different OOS experience:</p>
+    <div class="toggle-bar">
+      <button class="toggle-btn active" onclick="setMode('topup')"><i class="ti ti-device-mobile" aria-hidden="true"></i> Mobile top-up (abonnement)</button>
+      <button class="toggle-btn" onclick="setMode('pin')"><i class="ti ti-gift" aria-hidden="true"></i> Gift card / PIN product</button>
+      <button class="toggle-btn" onclick="setMode('denom')"><i class="ti ti-layers-difference" aria-hidden="true"></i> Denomination OOS</button>
+    </div>
+  </div>
+
+  <div class="product-card">
+    <div class="product-hero">
+      <div class="product-img" id="heroImg" style="background:#E8F5E9;">
+        <span id="heroLogo" style="font-size:17px;font-weight:700;color:#E00;letter-spacing:-1px">vodafone</span>
+        <span class="oos-badge">OOS</span>
+      </div>
+      <div class="product-meta">
+        <p class="product-title" id="heroTitle">Vodafone Top-up</p>
+        <div class="product-sub">
+          <span><i class="ti ti-flag" style="font-size:14px" aria-hidden="true"></i> <span id="heroCountry">Netherlands</span></span>
+          <span><i class="ti ti-mail" style="font-size:14px" aria-hidden="true"></i> On screen + Email</span>
+        </div>
+        <div class="oos-banner">
+          <i class="ti ti-alert-circle" style="font-size:18px;color:#DC2626;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>
+          <div class="oos-banner-text">
+            <strong id="oosTitle">Temporarily out of stock</strong>
+            <span id="oosSubtitle">All Vodafone top-ups are currently unavailable.</span>
+          </div>
+        </div>
+        <div class="notify-panel">
+          <p class="notify-title"><i class="ti ti-bell" style="font-size:15px;vertical-align:-2px;margin-right:4px" aria-hidden="true"></i>Notify me when it's back</p>
+          <input type="email" class="notify-input" id="emailInput" placeholder="example@email.com" />
+          <button class="btn-notify" onclick="submitNotify('alert')">Notify me when back in stock</button>
+          <div class="divider-or"><span>or</span></div>
+          <button class="btn-subscribe" onclick="submitNotify('subscribe')">Subscribe</button>
+          <p class="consent-copy">By subscribing, you agree to receive marketing emails and offers from Recharge. You can unsubscribe at any time. See our <a href="#">Privacy Statement</a> for details.</p>
+          <div class="success-msg" id="successMsg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="denom-section" id="denomSection" style="display:none;">
+      <p class="denom-title">Other denominations available now</p>
+      <div class="denom-grid" id="denomGrid"></div>
+    </div>
+
+    <div class="alts-section" id="altsSection" style="display:none;">
+      <div class="alts-header">
+        <p class="alts-title" id="altsTitle">Switch to a similar gift card</p>
+        <a class="see-all">See all <i class="ti ti-chevron-right" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i></a>
+      </div>
+      <p class="alts-sub">Available now in the same category</p>
+      <div class="alts-grid" id="altsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const modes = {
+  topup: {
+    bg:'#E8F5E9', logo:'<span style="font-size:17px;font-weight:700;color:#E00;letter-spacing:-1px">vodafone</span>',
+    title:'Vodafone Top-up', country:'Netherlands',
+    oosTitle:'Temporarily out of stock', oosSub:'All Vodafone top-ups are currently unavailable.',
+    showAlts:false, showDenom:false
+  },
+  pin: {
+    bg:'#E3F2FD', logo:'<span style="font-size:13px;font-weight:700;color:#555">🍎 Gift Card</span>',
+    title:'Apple Gift Card', country:'United States',
+    oosTitle:'Temporarily out of stock', oosSub:'Apple Gift Cards are currently unavailable.',
+    showAlts:true, showDenom:false,
+    altsTitle:'Switch to a similar gift card',
+    alts:[
+      {name:'Google Play', price:'from €10', bg:'#34A853', initials:'GP'},
+      {name:'Amazon', price:'from €15', bg:'#FF9900', initials:'AZ'},
+      {name:'Zalando', price:'from €20', bg:'#FF6900', initials:'ZL'},
+    ]
+  },
+  denom: {
+    bg:'#EDE7F6', logo:'<span style="font-size:11px;font-weight:700;color:#1565C0;text-align:center;line-height:1.3">ACCESS<br>WIRELESS</span>',
+    title:'Access Wireless Card — United States', country:'United States',
+    oosTitle:'Some denominations are out of stock', oosSub:'$10 and $50 top-ups are currently unavailable.',
+    showAlts:false, showDenom:true
+  }
+};
+
+const denoms = [
+  {label:'$5 top-up', price:'7.47 CAD', available:true},
+  {label:'$10 top-up', price:'Out of stock', available:false},
+  {label:'$25 top-up', price:'37.34 CAD', available:true},
+  {label:'$50 top-up', price:'Out of stock', available:false},
+];
+
+function setMode(mode) {
+  document.querySelectorAll('.toggle-btn').forEach((b,i)=>b.classList.toggle('active',['topup','pin','denom'][i]===mode));
+  const m = modes[mode];
+  document.getElementById('heroImg').style.background = m.bg;
+  document.getElementById('heroLogo').innerHTML = m.logo;
+  document.getElementById('heroTitle').textContent = m.title;
+  document.getElementById('heroCountry').textContent = m.country;
+  document.getElementById('oosTitle').textContent = m.oosTitle;
+  document.getElementById('oosSubtitle').textContent = m.oosSub;
+  document.getElementById('successMsg').style.display = 'none';
+  document.getElementById('emailInput').value = '';
+
+  const alts = document.getElementById('altsSection');
+  const denom = document.getElementById('denomSection');
+
+  if (m.showAlts) {
+    alts.style.display = 'block';
+    document.getElementById('altsTitle').textContent = m.altsTitle;
+    document.getElementById('altsGrid').innerHTML = m.alts.map(a=>`
+      <div class="alt-tile">
+        <div class="alt-logo" style="background:${a.bg}">${a.initials}</div>
+        <div class="alt-name">${a.name}</div>
+        <div class="alt-price">${a.price}</div>
+        <button class="alt-buy">Buy now</button>
+      </div>`).join('');
+  } else { alts.style.display = 'none'; }
+
+  if (m.showDenom) {
+    denom.style.display = 'block';
+    document.getElementById('denomGrid').innerHTML = denoms.map(d=>`
+      <div class="denom-tile ${d.available?'':'oos-denom'}">
+        <div class="denom-label">${d.label}</div>
+        <button class="denom-buy ${d.available?'active':'inactive'}">${d.available?'Buy now · '+d.price:d.price}</button>
+      </div>`).join('');
+  } else { denom.style.display = 'none'; }
+}
+
+function submitNotify(type) {
+  const v = document.getElementById('emailInput').value;
+  if (!v || !v.includes('@')) { document.getElementById('emailInput').style.borderColor='#DC2626'; return; }
+  document.getElementById('emailInput').style.borderColor='';
+  const msg = document.getElementById('successMsg');
+  msg.style.display = 'block';
+  msg.innerHTML = type === 'subscribe'
+    ? '<i class="ti ti-check" aria-hidden="true"></i> Subscribed! You\'ll receive offers and a back-in-stock alert when it returns.'
+    : '<i class="ti ti-check" aria-hidden="true"></i> Got it! We\'ll send one email as soon as it\'s back in stock.';
+}
+
+setMode('topup');
+</script>
