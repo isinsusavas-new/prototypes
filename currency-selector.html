@@ -43,10 +43,10 @@
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
 
   .product-hero { padding: 16px; display: flex; gap: 14px; align-items: flex-start; border-bottom: 1px solid var(--border); }
-  .hero-img { width: 72px; height: 72px; border-radius: var(--radius-md); background: #E3F2FD; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+  .hero-img { width: 80px; height: 62px; border-radius: var(--radius-md); background: #1b2838; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .hero-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
-  .hero-sub { font-size: 12px; color: var(--text-2); }
-  .hero-delivery { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-2); margin-top: 6px; }
+  .hero-sub { font-size: 12px; color: var(--text-2); margin-bottom: 6px; }
+  .hero-delivery { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-2); }
 
   .section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
   .section-label { font-size: 11px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
@@ -69,6 +69,14 @@
   .dot-green { background: #22C55E; }
   .dot-red { background: #EF4444; }
   .dot-black { background: #111827; }
+
+  .oos-note {
+    display: flex; align-items: flex-start; gap: 8px;
+    background: #FEF2F2; border: 1px solid #FCA5A5;
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    margin-top: 10px; font-size: 12px; color: #991B1B; line-height: 1.5;
+  }
+  .oos-note svg { flex-shrink: 0; margin-top: 1px; }
 
   .denom-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .denom-chip {
@@ -114,10 +122,12 @@
 
   <div class="card">
     <div class="product-hero">
-      <div class="hero-img">🍎</div>
+      <div class="hero-img">
+        <svg width="56" height="20" viewBox="0 0 56 20" fill="none"><text x="0" y="16" font-family="Arial" font-size="16" font-weight="700" fill="white">STEAM</text></svg>
+      </div>
       <div>
-        <div class="hero-name">Apple Gift Card</div>
-        <div class="hero-sub">Gift cards · United States</div>
+        <div class="hero-name">Steam Gift Card</div>
+        <div class="hero-sub">Gaming · United States · Digital delivery</div>
         <div class="hero-delivery">✉️ On screen + Email</div>
       </div>
     </div>
@@ -125,6 +135,10 @@
     <div class="section">
       <div class="section-label">Product currency</div>
       <div class="curr-row" id="currRow"></div>
+      <div class="oos-note" id="oosNote" style="display:none;">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="#991B1B" stroke-width="1.2"/><rect x="7" y="4" width="1" height="4.5" rx=".5" fill="#991B1B"/><rect x="7" y="9.5" width="1" height="1" rx=".5" fill="#991B1B"/></svg>
+        <span id="oosNoteText"></span>
+      </div>
     </div>
 
     <div class="section">
@@ -144,7 +158,7 @@
     </div>
 
     <div class="checkout-section">
-      <button class="buy-btn" id="buyBtn">Buy now · $30</button>
+      <button class="buy-btn" id="buyBtn">Buy now · 200 HKD</button>
       <div class="express-label">Express checkout</div>
       <div class="express-btns">
         <button class="paypal-btn">PayPal</button>
@@ -160,16 +174,18 @@
 
 <script>
 const currencies = [
-  { symbol: '$', code: 'USD', available: true },
+  { symbol: 'HK$', code: 'HKD', available: true },
+  { symbol: '$', code: 'USD', available: false },
   { symbol: '€', code: 'EUR', available: true },
-  { symbol: '£', code: 'GBP', available: false },
 ];
 
 const denomsByCurr = {
-  USD: ['$10', '$20', '$30', '$50', '$100'],
-  EUR: ['€10', '€15', '€25', '€50'],
-  GBP: [],
+  HKD: ['50 HKD', '100 HKD', '200 HKD', '300 HKD', '500 HKD', '1,000 HKD'],
+  USD: [],
+  EUR: ['€5', '€10', '€20', '€50', '€100'],
 };
+
+const defaultDenom = { HKD: 2, USD: 0, EUR: 2 };
 
 let selCurr = 0, selDenom = 2, qty = 1;
 
@@ -183,12 +199,21 @@ function renderCurr() {
       ${c.symbol}${c.code}
     </div>`;
   }).join('');
+
+  const oosList = currencies.filter(c => !c.available).map(c => c.symbol + c.code).join(', ');
+  const note = document.getElementById('oosNote');
+  if (oosList) {
+    document.getElementById('oosNoteText').textContent = oosList + ' is temporarily out of stock. Switch to an available currency above to complete your purchase.';
+    note.style.display = 'flex';
+  } else {
+    note.style.display = 'none';
+  }
 }
 
 function renderDenom() {
   const code = currencies[selCurr].code;
   const denoms = denomsByCurr[code] || [];
-  if (selDenom >= denoms.length) selDenom = 0;
+  if (selDenom >= denoms.length) selDenom = defaultDenom[code] ?? 0;
   document.getElementById('denomGrid').innerHTML = denoms.map((d, i) =>
     `<div class="denom-chip ${i === selDenom ? 'active' : ''}" onclick="setDenom(${i})">${d}</div>`
   ).join('');
@@ -202,7 +227,7 @@ function updateBtn() {
   document.getElementById('buyBtn').textContent = `Buy now · ${d}${qty > 1 ? ' × ' + qty : ''}`;
 }
 
-function setCurr(i) { selCurr = i; selDenom = 0; renderCurr(); renderDenom(); }
+function setCurr(i) { selCurr = i; selDenom = defaultDenom[currencies[i].code] ?? 0; renderCurr(); renderDenom(); }
 function setDenom(i) { selDenom = i; renderDenom(); }
 function changeQty(d) {
   qty = Math.max(1, Math.min(10, qty + d));
