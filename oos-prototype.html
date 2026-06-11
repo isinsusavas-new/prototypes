@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OOS Fallback Prototype — Startselect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    color-scheme: light;
+    --font: 'Inter', system-ui, sans-serif;
+    --bg: #F9FAFB;
+    --surface: #FFFFFF;
+    --border: #E5E7EB;
+    --border-light: #F3F4F6;
+    --text: #111827;
+    --text-2: #6B7280;
+    --text-3: #9CA3AF;
+    --blue: #1A56DB;
+    --red-bg: #FEF2F2;
+    --red-border: #FCA5A5;
+    --red-text: #991B1B;
+    --red-sub: #B91C1C;
+    --green-bg: #F0FDF4;
+    --green-border: #86EFAC;
+    --green-text: #166534;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 999px;
+  }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px 60px;
+  }
+  .wrap { width: 100%; max-width: 660px; }
+  .page-header { margin-bottom: 24px; }
+  .page-header h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .page-header p { font-size: 13px; color: var(--text-2); }
+  .chip { display: inline-block; background: #EEF2FF; color: #3730A3; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: var(--radius-full); margin-left: 8px; vertical-align: middle; }
+
+  /* Toggle */
+  .toggle-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+  .toggle-btn {
+    flex: 1; padding: 9px 10px; border: 1px solid var(--border);
+    border-radius: var(--radius-full); background: var(--surface);
+    color: var(--text-2); font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all .15s; font-family: var(--font);
+  }
+  .toggle-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .toggle-btn:hover:not(.active) { background: var(--border-light); }
+
+  /* Card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .product-hero { display: flex; gap: 18px; padding: 20px; }
+  .product-img {
+    width: 130px; height: 100px; border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; flex-shrink: 0; overflow: hidden;
+  }
+  .oos-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--red-bg); color: var(--red-text);
+    font-size: 10px; font-weight: 600; padding: 3px 7px;
+    border-radius: var(--radius-full); border: 1px solid var(--red-border);
+  }
+  .product-meta { flex: 1; min-width: 0; }
+  .product-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .product-sub { display: flex; gap: 14px; font-size: 12px; color: var(--text-2); margin-bottom: 14px; }
+  .product-sub span { display: flex; align-items: center; gap: 4px; }
+  .oos-banner {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--red-bg); border: 1px solid var(--red-border);
+    border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px;
+  }
+  .oos-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .oos-banner strong { display: block; color: var(--red-text); font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .oos-banner p { color: var(--red-sub); font-size: 12px; margin: 0; }
+
+  /* Notify panel */
+  .notify-panel {
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 16px; background: var(--bg);
+  }
+  .notify-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .notify-input {
+    width: 100%; font-size: 13px; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius-full);
+    background: var(--surface); color: var(--text);
+    margin-bottom: 10px; font-family: var(--font); outline: none;
+    transition: border-color .15s;
+  }
+  .notify-input:focus { border-color: var(--blue); }
+  .notify-input.error { border-color: #DC2626; }
+  .btn-ghost {
+    width: 100%; padding: 10px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius-full);
+    font-size: 13px; font-weight: 500; color: var(--text);
+    cursor: pointer; font-family: var(--font); margin-bottom: 12px;
+    transition: background .15s;
+  }
+  .btn-ghost:hover { background: var(--bg); }
+  .divider { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .divider span { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .divider::before, .divider::after { content: ''; flex: 1; border-top: 1px solid var(--border-light); }
+  .btn-subscribe {
+    width: 100%; padding: 12px; background: #111827; color: #fff;
+    border: none; border-radius: var(--radius-full);
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    margin-bottom: 10px; font-family: var(--font); letter-spacing: 0.01em;
+    transition: background .15s;
+  }
+  .btn-subscribe:hover { background: #1f2937; }
+  .consent-copy { font-size: 11px; color: var(--text-2); line-height: 1.65; }
+  .consent-copy a { color: var(--text-2); }
+  .success-msg {
+    display: none; background: var(--green-bg); border: 1px solid var(--green-border);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    font-size: 13px; color: var(--green-text); margin-top: 12px;
+  }
+
+  /* Section divider */
+  .section-divider { border-top: 1px solid var(--border); }
+
+  /* Alt products */
+  .alts-section { padding: 16px 20px 20px; }
+  .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; }
+  .section-title { font-size: 15px; font-weight: 600; }
+  .see-all { font-size: 12px; color: var(--blue); cursor: pointer; text-decoration: none; }
+  .section-sub { font-size: 12px; color: var(--text-2); margin-bottom: 14px; }
+  .alts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .alt-tile {
+    border: 1.5px solid #166534; border-radius: var(--radius-md);
+    padding: 14px 10px 12px; text-align: center; background: var(--surface);
+    cursor: pointer; transition: border-color .15s;
+  }
+  .alt-tile:hover { border-color: var(--blue); }
+  .alt-logo {
+    width: 44px; height: 44px; border-radius: 10px;
+    margin: 0 auto 8px; display: flex; align-items: center;
+    justify-content: center; font-size: 13px; font-weight: 700; color: #fff;
+  }
+  .alt-name { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+  .alt-price { font-size: 11px; color: var(--text-2); margin-bottom: 10px; }
+  .alt-buy {
+    width: 100%; padding: 7px 0; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 12px; color: var(--text); cursor: pointer; font-weight: 500;
+    font-family: var(--font); transition: background .15s;
+  }
+  .alt-buy:hover { background: var(--bg); }
+
+  /* Denominations */
+  .denom-section { padding: 16px 20px 20px; }
+  .denom-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .denom-tile { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; }
+  .denom-tile.oos-denom { opacity: 0.5; background: var(--bg); }
+  .denom-label { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+  .denom-buy {
+    width: 100%; padding: 8px; border-radius: var(--radius-sm);
+    cursor: pointer; font-weight: 500; font-family: var(--font); font-size: 12px;
+  }
+  .denom-buy.avail { background: #111827; color: #fff; border: none; }
+  .denom-buy.unavail { background: var(--bg); color: var(--text-3); border: 1px solid var(--border); cursor: default; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="page-header">
+    <h1>OOS Fallback Experience <span class="chip">Prototype</span></h1>
+    <p>Startselect · Switch product type to preview the different out-of-stock flows</p>
+  </div>
+
+  <div class="toggle-bar">
+    <button class="toggle-btn active" onclick="setMode('topup')">📱 Mobile top-up</button>
+    <button class="toggle-btn" onclick="setMode('pin')">🎁 Gift card / PIN</button>
+    <button class="toggle-btn" onclick="setMode('denom')">🗂 Denomination OOS</button>
+  </div>
+
+  <div class="card">
+    <div class="product-hero">
+      <div class="product-img" id="heroImg" style="background:#E8F5E9;">
+        <span id="heroLogo" style="font-size:17px;font-weight:700;color:#E00;letter-spacing:-1px;">vodafone</span>
+        <span class="oos-badge">OOS</span>
+      </div>
+      <div class="product-meta">
+        <div class="product-title" id="heroTitle">Vodafone Top-up</div>
+        <div class="product-sub">
+          <span>🇳🇱 <span id="heroCountry">Netherlands</span></span>
+          <span>✉️ On screen + Email</span>
+        </div>
+        <div class="oos-banner">
+          <div class="oos-icon">🚫</div>
+          <div>
+            <strong id="oosTitle">Temporarily out of stock</strong>
+            <p id="oosSubtitle">All Vodafone top-ups are currently unavailable.</p>
+          </div>
+        </div>
+        <div class="notify-panel">
+          <div class="notify-title">🔔 Notify me when it's back</div>
+          <input type="email" class="notify-input" id="emailInput" placeholder="example@email.com" />
+          <button class="btn-ghost" onclick="submitNotify('alert')">Notify me when back in stock</button>
+          <div class="divider"><span>or</span></div>
+          <button class="btn-subscribe" onclick="submitNotify('subscribe')">Subscribe</button>
+          <p class="consent-copy">By subscribing, you agree to receive marketing emails and offers from Recharge. You can unsubscribe at any time. See our <a href="#">Privacy Statement</a> for details.</p>
+          <div class="success-msg" id="successMsg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider" id="denomSep" style="display:none;"></div>
+    <div class="denom-section" id="denomSection" style="display:none;">
+      <div class="section-header">
+        <div class="section-title">Other denominations available now</div>
+      </div>
+      <div class="section-sub">Buy one of these while the others restock</div>
+      <div class="denom-grid" id="denomGrid"></div>
+    </div>
+
+    <div class="section-divider" id="altsSep" style="display:none;"></div>
+    <div class="alts-section" id="altsSection" style="display:none;">
+      <div class="section-header">
+        <div class="section-title" id="altsTitle">Switch to a similar gift card</div>
+        <a class="see-all" href="#">See all →</a>
+      </div>
+      <div class="section-sub">Available now in the same category</div>
+      <div class="alts-grid" id="altsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const modes = {
+  topup: {
+    bg: '#E8F5E9',
+    logo: '<span style="font-size:17px;font-weight:700;color:#E00;letter-spacing:-1px;">vodafone</span>',
+    title: 'Vodafone Top-up', country: 'Netherlands',
+    oosTitle: 'Temporarily out of stock',
+    oosSub: 'All Vodafone top-ups are currently unavailable.',
+    showAlts: false, showDenom: false
+  },
+  pin: {
+    bg: '#E3F2FD',
+    logo: '<span style="font-size:22px;">🍎</span>',
+    title: 'Apple Gift Card', country: 'United States',
+    oosTitle: 'Temporarily out of stock',
+    oosSub: 'Apple Gift Cards are currently unavailable.',
+    showAlts: true, showDenom: false,
+    altsTitle: 'Switch to a similar gift card',
+    alts: [
+      { name: 'Google Play', price: 'from €10', bg: '#34A853', icon: 'GP' },
+      { name: 'Amazon', price: 'from €15', bg: '#FF9900', icon: 'AZ' },
+      { name: 'Zalando', price: 'from €20', bg: '#FF6900', icon: 'ZL' },
+    ]
+  },
+  denom: {
+    bg: '#EDE7F6',
+    logo: '<span style="font-size:11px;font-weight:700;color:#1565C0;text-align:center;line-height:1.3;display:block;">ACCESS<br>WIRELESS</span>',
+    title: 'Access Wireless — United States', country: 'United States',
+    oosTitle: 'Some denominations are out of stock',
+    oosSub: '$10 and $50 top-ups are currently unavailable.',
+    showAlts: false, showDenom: true
+  }
+};
+
+const denoms = [
+  { label: '$5 top-up', price: '7.47 CAD', available: true },
+  { label: '$10 top-up', price: 'Out of stock', available: false },
+  { label: '$25 top-up', price: '37.34 CAD', available: true },
+  { label: '$50 top-up', price: 'Out of stock', available: false },
+];
+
+function setMode(mode) {
+  document.querySelectorAll('.toggle-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['topup','pin','denom'][i] === mode);
+  });
+  const m = modes[mode];
+  document.getElementById('heroImg').style.background = m.bg;
+  document.getElementById('heroLogo').innerHTML = m.logo;
+  document.getElementById('heroTitle').textContent = m.title;
+  document.getElementById('heroCountry').textContent = m.country;
+  document.getElementById('oosTitle').textContent = m.oosTitle;
+  document.getElementById('oosSubtitle').textContent = m.oosSub;
+  document.getElementById('successMsg').style.display = 'none';
+  document.getElementById('emailInput').value = '';
+  document.getElementById('emailInput').classList.remove('error');
+
+  const showAlts = m.showAlts;
+  const showDenom = m.showDenom;
+
+  document.getElementById('altsSep').style.display = showAlts ? 'block' : 'none';
+  document.getElementById('altsSection').style.display = showAlts ? 'block' : 'none';
+  document.getElementById('denomSep').style.display = showDenom ? 'block' : 'none';
+  document.getElementById('denomSection').style.display = showDenom ? 'block' : 'none';
+
+  if (showAlts) {
+    document.getElementById('altsTitle').textContent = m.altsTitle;
+    document.getElementById('altsGrid').innerHTML = m.alts.map(a => `
+      <div class="alt-tile">
+        <div class="alt-logo" style="background:${a.bg}">${a.icon}</div>
+        <div class="alt-name">${a.name}</div>
+        <div class="alt-price">${a.price}</div>
+        <button class="alt-buy">Buy now</button>
+      </div>`).join('');
+  }
+
+  if (showDenom) {
+    document.getElementById('denomGrid').innerHTML = denoms.map(d => `
+      <div class="denom-tile ${d.available ? '' : 'oos-denom'}">
+        <div class="denom-label">${d.label}</div>
+        <button class="denom-buy ${d.available ? 'avail' : 'unavail'}">
+          ${d.available ? 'Buy now · ' + d.price : d.price}
+        </button>
+      </div>`).join('');
+  }
+}
+
+function submitNotify(type) {
+  const input = document.getElementById('emailInput');
+  const val = input.value.trim();
+  if (!val || !val.includes('@')) {
+    input.classList.add('error');
+    return;
+  }
+  input.classList.remove('error');
+  const msg = document.getElementById('successMsg');
+  msg.style.display = 'block';
+  msg.innerHTML = type === 'subscribe'
+    ? '✅ Subscribed! You\'ll receive offers and a back-in-stock alert when it returns.'
+    : '✅ Got it! We\'ll send one email as soon as it\'s back in stock.';
+}
+
+setMode('topup');
+</script>
+</body>
+</html>
